@@ -1,12 +1,12 @@
 # Get the coinbase scriptsigs from every block in the blockchain.
 # ---------------------------------------------------------------
 
-# Check bitcoin-cli is working and get the current block count
-if bitcoin-cli getblockcount 2> /dev/null; then
-  BLOCKCOUNT=$(bitcoin-cli getblockcount | tr -d "\n")
+# Check firo-cli is working and get the current block count
+if firo-cli getblockcount 2> /dev/null; then
+  BLOCKCOUNT=$(firo-cli getblockcount | tr -d "\n")
   echo "Current block height: $BLOCKCOUNT"
 else
-  echo "Could not connect to bitcoin-cli. Is bitcoind running?"
+  echo "Could not connect to firo-cli. Is firod running?"
   exit 1
 fi
 
@@ -14,17 +14,17 @@ fi
 mkdir -p data # -p: doesn't return an error if the directory already exists
 
 # 1. Get block header data (height, timestamp, target)
-echo "bitcoin-iterate (blocks headers) > data/blocks.txt"
-bitcoin-iterate -q --block=%bN,%bs,%bt > data/blocks.txt
+echo "firo-iterate (blocks headers) > data/blocks.txt"
+firo-iterate -q --block=%bN,%bs,%bt > data/blocks.txt
 
 # 2. Get every coinbase transaction (takes about 40 mins - 300MB)
-echo "bitcoin-iterate (coinbase transactions) > data/txs.txt"
-bitcoin-iterate -q --transaction=%tN,%tX | grep "^0," | cut -d "," -f 2 > data/txs.txt
+echo "firo-iterate (coinbase transactions) > data/txs.txt"
+firo-iterate -q --transaction=%tN,%tX | grep "^0," | cut -d "," -f 2 > data/txs.txt
 
 # 3. Decode the coinbase transactions to get the input scriptsig and first output address (65 mins - 80MB)
 echo "Decoding coinbase transactions to get scriptsigs and addresses > data/txs_scriptsigs_addresses.txt"
 rm -f data/txs_scriptsigs_addresses.txt # delete existing file so that we don't accidentally append to it
-while read LINE; do bitcoin-cli decoderawtransaction "$LINE" | jq '"\(.vin[0].coinbase),\(.vout[0].scriptPubKey.addresses[0])"' | tr -d '"' >> data/txs_scriptsigs_addresses.txt; done < data/txs.txt
+while read LINE; do firo-cli decoderawtransaction "$LINE" | jq '"\(.vin[0].coinbase),\(.vout[0].scriptPubKey.addresses[0])"' | tr -d '"' >> data/txs_scriptsigs_addresses.txt; done < data/txs.txt
 
 # 4. Truncate the files so that they're both the same length as block.txt
 LENGTH=$(wc -l data/blocks.txt | cut -d" " -f1)
