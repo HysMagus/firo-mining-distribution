@@ -193,7 +193,7 @@ with open('data/all.csv') as f:
             plt.text(-1.25, -1, "Block: " + prettyheight, color='#333333', fontsize=20, fontname='Ubuntu Mono') # -1,-1 = left lower
 
             # Add title
-            plt.title('Bitcoin Mining Distribution', fontsize=28, fontname='Ubuntu', pad=28)
+            plt.title('FIRO Mining Distribution', fontsize=28, fontname='Ubuntu', pad=28)
 
             # Remove whitespace from around pie chart
             fig.tight_layout()
